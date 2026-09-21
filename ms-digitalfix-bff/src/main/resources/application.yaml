@@ -1,0 +1,37 @@
+server:
+  port: 8083 # El BFF será la puerta de entrada principal para el Frontend
+
+spring:
+  application:
+    name: ms-digitalfix-bff
+
+  # Importación nativa del archivo .env forzando la búsqueda en el directorio actual
+  config:
+    import: optional:file:./.env
+
+  # Configuración de Seguridad para MSAL (Validación JWT automática)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL oficial de Microsoft para validar la autenticidad de los tokens
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+          # Audiencia esperada (tu aplicación)
+          audiences: api://${AZURE_CLIENT_ID}
+
+  # Configuración del Gateway: Enrutamiento del tráfico hacia tus microservicios
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Ruta hacia el microservicio de órdenes de trabajo
+          - id: workorders-service
+            uri: ${WORKORDERS_URL}
+            predicates:
+              - Path=/api/workorders/**
+
+          # Ruta hacia el microservicio de catálogo (servicios y repuestos)
+          - id: catalog-service
+            uri: ${CATALOG_URL}
+            predicates:
+              - Path=/api/catalog/**
