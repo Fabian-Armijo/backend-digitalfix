@@ -17,21 +17,24 @@ spring:
           # URL oficial de Microsoft para validar la autenticidad de los tokens
           issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
           # Audiencia esperada (tu aplicación)
-          audiences: api://${AZURE_CLIENT_ID}
+          audiences:
+            - api://${AZURE_CLIENT_ID}
+            - ${AZURE_CLIENT_ID}
 
   # Configuración del Gateway: Enrutamiento del tráfico hacia tus microservicios
   cloud:
     gateway:
-      mvc:
-        routes:
-          # Ruta hacia el microservicio de órdenes de trabajo
-          - id: workorders-service
-            uri: ${WORKORDERS_URL}
-            predicates:
-              - Path=/api/workorders/**
+      server:
+        webmvc:
+          routes:
+            # Ruta hacia el microservicio de órdenes de trabajo
+            - id: workorders-service
+              uri: ${WORKORDERS_URL}
+              predicates:
+                - Path=/api/workorders/**
 
-          # Ruta hacia el microservicio de catálogo (servicios y repuestos)
-          - id: catalog-service
-            uri: ${CATALOG_URL}
-            predicates:
-              - Path=/api/catalog/**
+            # Ruta hacia el microservicio de catálogo (servicios y repuestos)
+            - id: catalog-service
+              uri: ${CATALOG_URL}
+              predicates:
+                - Path=/api/catalog/**
