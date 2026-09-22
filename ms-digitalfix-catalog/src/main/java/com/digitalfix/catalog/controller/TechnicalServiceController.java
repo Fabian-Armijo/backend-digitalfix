@@ -32,4 +32,18 @@ public class TechnicalServiceController {
     public ResponseEntity<TechnicalService> getServiceById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getServiceById(id));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TechnicalService> updateService(
+            @PathVariable Long id,
+            @Valid @RequestBody TechnicalServiceRequestDTO request) {
+        return ResponseEntity.ok(service.updateService(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteService(@PathVariable Long id) {
+        service.deleteService(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+

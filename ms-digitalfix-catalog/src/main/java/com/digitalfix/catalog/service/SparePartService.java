@@ -9,4 +9,7 @@ public interface SparePartService {
     List<SparePart> getAllSpareParts();
     SparePart getSparePartById(Long id);
     SparePart reduceStock(Long id, Integer quantity); // Regla clave del negocio
+    SparePart updateSparePart(Long id, SparePartRequestDTO request);
+    void deleteSparePart(Long id);
 }
+

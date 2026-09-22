@@ -37,4 +37,20 @@ public class TechnicalServiceServiceImpl implements TechnicalServiceService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio técnico no encontrado")); // Manejo centralizado de errores[cite: 1]
     }
+
+    @Override
+    public TechnicalService updateService(Long id, TechnicalServiceRequestDTO request) {
+        TechnicalService service = getServiceById(id);
+        service.setName(request.getName());
+        service.setFee(request.getFee());
+        service.setDescription(request.getDescription());
+        return repository.save(service);
+    }
+
+    @Override
+    public void deleteService(Long id) {
+        TechnicalService service = getServiceById(id);
+        repository.delete(service);
+    }
 }
+

@@ -8,4 +8,6 @@ public interface TechnicalServiceService {
     TechnicalService createService(TechnicalServiceRequestDTO request);
     List<TechnicalService> getAllServices();
     TechnicalService getServiceById(Long id);
+    TechnicalService updateService(Long id, TechnicalServiceRequestDTO request);
+    void deleteService(Long id);
 }

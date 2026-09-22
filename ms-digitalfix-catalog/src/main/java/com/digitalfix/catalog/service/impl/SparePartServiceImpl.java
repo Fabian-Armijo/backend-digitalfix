@@ -50,4 +50,20 @@ public class SparePartServiceImpl implements SparePartService {
         part.setStock(part.getStock() - quantity);
         return repository.save(part);
     }
+
+    @Override
+    public SparePart updateSparePart(Long id, SparePartRequestDTO request) {
+        SparePart part = getSparePartById(id);
+        part.setName(request.getName());
+        part.setCost(request.getCost());
+        part.setStock(request.getStock());
+        return repository.save(part);
+    }
+
+    @Override
+    public void deleteSparePart(Long id) {
+        SparePart part = getSparePartById(id);
+        repository.delete(part);
+    }
 }
+

@@ -40,4 +40,18 @@ public class SparePartController {
             @RequestParam Integer quantity) {
         return ResponseEntity.ok(service.reduceStock(id, quantity));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SparePart> updateSparePart(
+            @PathVariable Long id,
+            @Valid @RequestBody SparePartRequestDTO request) {
+        return ResponseEntity.ok(service.updateSparePart(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSparePart(@PathVariable Long id) {
+        service.deleteSparePart(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+
