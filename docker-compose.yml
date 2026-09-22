@@ -1,0 +1,86 @@
+services:
+  # 1. Base de datos PostgreSQL
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: digitalfix-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: digitalfix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - digitalfix-network
+
+  # 2. Microservicio de Catálogo y Repuestos (Puerto 8082)
+  catalog-service:
+    build:
+      context: ./ms-digitalfix-catalog
+      dockerfile: Dockerfile
+    container_name: ms-digitalfix-catalog
+    environment:
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      DB_NAME: digitalfix
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgrespassword
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - digitalfix-network
+
+  # 3. Microservicio de Órdenes de Trabajo (Puerto 8081)
+  workorders-service:
+    build:
+      context: ./ms-digitalfixworkorders
+      dockerfile: Dockerfile
+    container_name: ms-digitalfixworkorders
+    environment:
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      DB_NAME: digitalfix
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgrespassword
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - digitalfix-network
+
+  # 4. Backend For Frontend (BFF / Gateway) (Puerto 8083)
+  bff-service:
+    build:
+      context: ./ms-digitalfix-bff
+      dockerfile: Dockerfile
+    container_name: ms-digitalfix-bff
+    environment:
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-cac38dd3-e614-48df-967a-3c9e4396eae3}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-e0877608-03e1-4d4b-a0c9-d50d0ddbdb7c}
+      CATALOG_URL: http://catalog-service:8082
+      WORKORDERS_URL: http://workorders-service:8081
+    ports:
+      - "8083:8083"
+    depends_on:
+      - catalog-service
+      - workorders-service
+    networks:
+      - digitalfix-network
+
+volumes:
+  postgres_data:
+
+networks:
+  digitalfix-network:
+    driver: bridge

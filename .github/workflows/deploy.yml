@@ -1,0 +1,38 @@
+name: Deploy Backend to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Conectar a EC2 y desplegar con Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🚀 Iniciando despliegue en AWS EC2..."
+            
+            # Navegamos al directorio del proyecto en la EC2
+            cd ~/backend-digitalfix || exit 1
+            
+            # Descargamos los últimos cambios de GitHub
+            echo "📥 Descargando cambios de git..."
+            git pull origin main
+            
+            # Reconstruimos y levantamos los contenedores con Docker Compose
+            echo "🐳 Reconstruyendo y levantando contenedores..."
+            docker compose down
+            docker compose up -d --build
+            
+            # Limpiamos imágenes obsoletas para no llenar el disco de la EC2
+            docker image prune -f
+            
+            echo "✅ ¡Despliegue completado con éxito!"
+            docker ps
