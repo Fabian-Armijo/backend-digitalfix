@@ -11,12 +11,22 @@
         <module name="ms-digitalfix-bff" />
         <module name="ms-digitalfix-catalog" />
       </profile>
+      <profile name="Annotation profile for ms-digitalfix-technicians" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="ms-digitalfix-technicians" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ms-digitalfix-bff" options="-parameters" />
       <module name="ms-digitalfix-catalog" options="-parameters" />
+      <module name="ms-digitalfix-technicians" options="-parameters" />
       <module name="ms-digitalfixworkorders" options="-parameters" />
     </option>
   </component>

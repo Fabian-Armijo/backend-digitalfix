@@ -53,6 +53,15 @@ public class SecurityConfig {
                         // Todos (Cliente, Supervisor, Admin) pueden ver el catálogo de servicios
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/catalog/**").authenticated()
 
+                        // 3. Reglas para el Microservicio de Técnicos
+                        // Solo Admin puede crear, actualizar y eliminar técnicos
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/technicians/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/technicians/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/technicians/**").hasRole("ADMIN")
+                        // Admin y Supervisor pueden consultar técnicos y cambiar su estado
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
+
                         // Cualquier otra petición debe estar autenticada
                         .anyRequest().authenticated()
                 )

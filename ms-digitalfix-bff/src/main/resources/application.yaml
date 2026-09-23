@@ -38,3 +38,9 @@ spring:
               uri: ${CATALOG_URL}
               predicates:
                 - Path=/api/catalog/**
+
+            # Ruta hacia el microservicio de técnicos
+            - id: technicians-service
+              uri: ${TECHNICIANS_URL}
+              predicates:
+                - Path=/api/technicians/**

@@ -62,7 +62,28 @@ services:
     networks:
       - digitalfix-network
 
-  # 4. Backend For Frontend (BFF / Gateway) (Puerto 8083)
+  # 4. Microservicio de Técnicos (Puerto 8084)
+  technicians-service:
+    build:
+      context: ./ms-digitalfix-technicians
+      dockerfile: Dockerfile
+    container_name: ms-digitalfix-technicians
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      DB_NAME: digitalfix
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgrespassword
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - digitalfix-network
+
+  # 5. Backend For Frontend (BFF / Gateway) (Puerto 8083)
   bff-service:
     build:
       context: ./ms-digitalfix-bff
@@ -74,11 +95,13 @@ services:
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-e0877608-03e1-4d4b-a0c9-d50d0ddbdb7c}
       CATALOG_URL: http://catalog-service:8082
       WORKORDERS_URL: http://workorders-service:8081
+      TECHNICIANS_URL: http://technicians-service:8084
     ports:
       - "8083:8083"
     depends_on:
       - catalog-service
       - workorders-service
+      - technicians-service
     networks:
       - digitalfix-network
 
