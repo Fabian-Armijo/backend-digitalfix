@@ -48,4 +48,11 @@ public class WorkOrderController {
     public ResponseEntity<WorkOrder> updateStatus(@PathVariable Long id, @RequestParam WorkOrderStatus newStatus) {
         return ResponseEntity.ok(service.updateStatus(id, newStatus));
     }
+
+    // DELETE /api/workorders/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteWorkOrder(@PathVariable Long id) {
+        service.deleteWorkOrder(id);
+        return ResponseEntity.noContent().build();
+    }
 }

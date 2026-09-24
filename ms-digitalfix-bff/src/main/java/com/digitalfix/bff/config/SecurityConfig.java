@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/workorders").hasAnyRole("CLIENTE", "SUPERVISOR")
                         // Solo Supervisores pueden asignar técnicos y hacer transiciones de estado
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/workorders/**").hasRole("SUPERVISOR")
+                        // Admin y Supervisor pueden eliminar órdenes
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/workorders/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         // Cualquiera autenticado puede ver las órdenes (luego podrías filtrar por ID en el servicio)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/workorders/**").authenticated()
 
@@ -54,11 +56,10 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/catalog/**").authenticated()
 
                         // 3. Reglas para el Microservicio de Técnicos
-                        // Solo Admin puede crear, actualizar y eliminar técnicos
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/technicians/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/technicians/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/technicians/**").hasRole("ADMIN")
-                        // Admin y Supervisor pueden consultar técnicos y cambiar su estado
+                        // Admin y Supervisor pueden gestionar técnicos (CRUD completo y cambios de estado)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/technicians/**").hasAnyRole("ADMIN", "SUPERVISOR")
 

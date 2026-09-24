@@ -72,4 +72,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         order.setStatus(newStatus);
         return repository.save(order);
     }
+
+    @Override
+    public void deleteWorkOrder(Long id) {
+        WorkOrder order = getWorkOrderById(id);
+        repository.delete(order);
+    }
 }
