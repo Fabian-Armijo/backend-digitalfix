@@ -20,16 +20,27 @@ $dbUser = if ($env:DB_USERNAME) { $env:DB_USERNAME } else { "postgres" }
 
 Write-Host "Iniciando inyección de datos para DigitalFix..." -ForegroundColor Cyan
 
-# 1. ms-digitalfix-technicians
-Write-Host "-> Inyectando técnicos en 'digitalfix_technicians_db'..." -ForegroundColor Yellow
-& $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_technicians_db -f "$PSScriptRoot\ms-digitalfix-technicians\seed-technicians.sql"
+# Comprobar si existe la base de datos unificada 'digitalfix' (Docker) o las 3 bases individuales
+$existingDbs = & $psqlPath -U $dbUser -h $dbHost -p $dbPort -d postgres -t -c "SELECT datname FROM pg_database WHERE datname IN ('digitalfix', 'digitalfix_catalog_db', 'digitalfix_technicians_db', 'digitalfix_workorders_db');"
 
-# 2. ms-digitalfix-catalog
-Write-Host "-> Inyectando catálogo y repuestos en 'digitalfix_catalog_db'..." -ForegroundColor Yellow
-& $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_catalog_db -f "$PSScriptRoot\ms-digitalfix-catalog\seed-catalog.sql"
+if ($existingDbs -match "\bdigitalfix\b") {
+    Write-Host "-> Inyectando seeds en base de datos unificada 'digitalfix'..." -ForegroundColor Yellow
+    & $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix -f "$PSScriptRoot\init-seeds.sql"
+}
 
-# 3. ms-digitalfixworkorders
-Write-Host "-> Inyectando órdenes de trabajo en 'digitalfix_workorders_db'..." -ForegroundColor Yellow
-& $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_workorders_db -f "$PSScriptRoot\ms-digitalfixworkorders\seed-workorders.sql"
+if ($existingDbs -match "\bdigitalfix_technicians_db\b") {
+    Write-Host "-> Inyectando técnicos en 'digitalfix_technicians_db'..." -ForegroundColor Yellow
+    & $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_technicians_db -f "$PSScriptRoot\ms-digitalfix-technicians\seed-technicians.sql"
+}
+
+if ($existingDbs -match "\bdigitalfix_catalog_db\b") {
+    Write-Host "-> Inyectando catálogo y repuestos en 'digitalfix_catalog_db'..." -ForegroundColor Yellow
+    & $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_catalog_db -f "$PSScriptRoot\ms-digitalfix-catalog\seed-catalog.sql"
+}
+
+if ($existingDbs -match "\bdigitalfix_workorders_db\b") {
+    Write-Host "-> Inyectando órdenes de trabajo en 'digitalfix_workorders_db'..." -ForegroundColor Yellow
+    & $psqlPath -U $dbUser -h $dbHost -p $dbPort -d digitalfix_workorders_db -f "$PSScriptRoot\ms-digitalfixworkorders\seed-workorders.sql"
+}
 
 Write-Host "Inyección completada exitosamente." -ForegroundColor Green
