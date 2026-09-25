@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/workorders").hasAnyRole("CLIENTE", "SUPERVISOR")
                         // Solo Supervisores pueden asignar técnicos y hacer transiciones de estado
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/workorders/**").hasRole("SUPERVISOR")
+                        // Admin y Supervisor pueden editar órdenes
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/workorders/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         // Admin y Supervisor pueden eliminar órdenes
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/workorders/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         // Cualquiera autenticado puede ver las órdenes (luego podrías filtrar por ID en el servicio)

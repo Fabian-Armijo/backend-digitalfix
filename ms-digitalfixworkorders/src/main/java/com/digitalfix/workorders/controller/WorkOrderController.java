@@ -49,6 +49,12 @@ public class WorkOrderController {
         return ResponseEntity.ok(service.updateStatus(id, newStatus));
     }
 
+    // PUT /api/workorders/{id} (El Supervisor puede editar la descripción y requerimiento)
+    @PutMapping("/{id}")
+    public ResponseEntity<WorkOrder> updateWorkOrder(@PathVariable Long id, @Valid @RequestBody WorkOrderRequestDTO request) {
+        return ResponseEntity.ok(service.updateWorkOrder(id, request));
+    }
+
     // DELETE /api/workorders/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkOrder(@PathVariable Long id) {
