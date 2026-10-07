@@ -1,0 +1,30 @@
+# ==========================================
+# Archivos y artefactos generados localmente
+# ==========================================
+docs/
+.agents/
+.agent/
+
+# ==========================================
+# Compilación y entornos de desarrollo (IDE)
+# ==========================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

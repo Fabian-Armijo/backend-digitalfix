@@ -20,6 +20,67 @@ services:
     networks:
       - digitalfix-network
 
+  # =========================================================================
+  # CLUSTER DE RABBITMQ (Alta Disponibilidad con 3 Nodos en Quorum)
+  # =========================================================================
+  rabbitmq-node1:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-node1
+    hostname: rabbitmq-node1
+    restart: unless-stopped
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "DIGITALFIX_CLUSTER_SECRET_COOKIE_2026"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    ports:
+      - "5672:5672"      # Protocolo AMQP para la aplicación
+      - "15672:15672"    # Interfaz Web de Monitoreo y Administración del Cluster
+    volumes:
+      - rabbitmq_node1_data:/var/lib/rabbitmq
+      - ./rabbitmq-cluster/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - digitalfix-network
+
+  rabbitmq-node2:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-node2
+    hostname: rabbitmq-node2
+    restart: unless-stopped
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "DIGITALFIX_CLUSTER_SECRET_COOKIE_2026"
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq_node2_data:/var/lib/rabbitmq
+      - ./rabbitmq-cluster/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    depends_on:
+      - rabbitmq-node1
+    networks:
+      - digitalfix-network
+
+  rabbitmq-node3:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-node3
+    hostname: rabbitmq-node3
+    restart: unless-stopped
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "DIGITALFIX_CLUSTER_SECRET_COOKIE_2026"
+    ports:
+      - "5674:5672"
+      - "15674:15672"
+    volumes:
+      - rabbitmq_node3_data:/var/lib/rabbitmq
+      - ./rabbitmq-cluster/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    depends_on:
+      - rabbitmq-node1
+    networks:
+      - digitalfix-network
+
+  # =========================================================================
+  # MICROSERVICIOS DEL BACKEND
+  # =========================================================================
+
   # 2. Microservicio de Catálogo y Repuestos (Puerto 8082)
   catalog-service:
     build:
@@ -41,7 +102,7 @@ services:
     networks:
       - digitalfix-network
 
-  # 3. Microservicio de Órdenes de Trabajo (Puerto 8081)
+  # 3. Microservicio de Órdenes de Trabajo - PRODUCTOR DE EVENTOS (Puerto 8081)
   workorders-service:
     build:
       context: ./ms-digitalfixworkorders
@@ -54,11 +115,20 @@ services:
       DB_NAME: digitalfix
       DB_USERNAME: postgres
       DB_PASSWORD: postgrespassword
+      RABBITMQ_ADDRESSES: rabbitmq-node1:5672,rabbitmq-node2:5672,rabbitmq-node3:5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
     ports:
       - "8081:8081"
     depends_on:
       postgres-db:
         condition: service_healthy
+      rabbitmq-node1:
+        condition: service_started
+      rabbitmq-node2:
+        condition: service_started
+      rabbitmq-node3:
+        condition: service_started
     networks:
       - digitalfix-network
 
@@ -83,7 +153,35 @@ services:
     networks:
       - digitalfix-network
 
-  # 5. Backend For Frontend (BFF / Gateway) (Puerto 8083)
+  # 5. Microservicio de Notificaciones - CONSUMIDOR ASÍNCRONO (Puerto 8085)
+  notifications-service:
+    build:
+      context: ./ms-digitalfix-notifications
+      dockerfile: Dockerfile
+    container_name: ms-digitalfix-notifications
+    restart: unless-stopped
+    environment:
+      RABBITMQ_ADDRESSES: rabbitmq-node1:5672,rabbitmq-node2:5672,rabbitmq-node3:5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      MAIL_HOST: ${MAIL_HOST:-sandbox.smtp.mailtrap.io}
+      MAIL_PORT: ${MAIL_PORT:-2525}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-notificaciones@digitalfix.com}
+    ports:
+      - "8085:8085"
+    depends_on:
+      rabbitmq-node1:
+        condition: service_started
+      rabbitmq-node2:
+        condition: service_started
+      rabbitmq-node3:
+        condition: service_started
+    networks:
+      - digitalfix-network
+
+  # 6. Backend For Frontend (BFF / Gateway) (Puerto 8083)
   bff-service:
     build:
       context: ./ms-digitalfix-bff
@@ -107,6 +205,9 @@ services:
 
 volumes:
   postgres_data:
+  rabbitmq_node1_data:
+  rabbitmq_node2_data:
+  rabbitmq_node3_data:
 
 networks:
   digitalfix-network:
