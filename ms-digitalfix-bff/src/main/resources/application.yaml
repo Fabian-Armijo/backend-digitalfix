@@ -15,11 +15,11 @@ spring:
       resourceserver:
         jwt:
           # URL oficial de Microsoft para validar la autenticidad de los tokens
-          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:f01230ab-9e94-4c94-8ce2-d2c2b31558dc}/v2.0
           # Audiencia esperada (tu aplicación)
           audiences:
-            - api://${AZURE_CLIENT_ID}
-            - ${AZURE_CLIENT_ID}
+            - api://${AZURE_CLIENT_ID:ece96448-d15c-403e-9525-fefc4f9378a1}
+            - ${AZURE_CLIENT_ID:ece96448-d15c-403e-9525-fefc4f9378a1}
 
   # Configuración del Gateway: Enrutamiento del tráfico hacia tus microservicios
   cloud:
@@ -29,18 +29,18 @@ spring:
           routes:
             # Ruta hacia el microservicio de órdenes de trabajo
             - id: workorders-service
-              uri: ${WORKORDERS_URL}
+              uri: ${WORKORDERS_URL:http://localhost:8081}
               predicates:
                 - Path=/api/workorders/**
 
             # Ruta hacia el microservicio de catálogo (servicios y repuestos)
             - id: catalog-service
-              uri: ${CATALOG_URL}
+              uri: ${CATALOG_URL:http://localhost:8082}
               predicates:
                 - Path=/api/catalog/**
 
             # Ruta hacia el microservicio de técnicos
             - id: technicians-service
-              uri: ${TECHNICIANS_URL}
+              uri: ${TECHNICIANS_URL:http://localhost:8084}
               predicates:
                 - Path=/api/technicians/**

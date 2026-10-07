@@ -11,5 +11,6 @@ public interface WorkOrderService {
     WorkOrder getWorkOrderById(Long id);
     WorkOrder assignTechnician(Long orderId, Long technicianId); // Acción del Supervisor
     WorkOrder updateStatus(Long orderId, WorkOrderStatus newStatus); // Cambio de estados
+    WorkOrder updateWorkOrder(Long id, WorkOrderRequestDTO request); // Edición de orden
     void deleteWorkOrder(Long id);
 }

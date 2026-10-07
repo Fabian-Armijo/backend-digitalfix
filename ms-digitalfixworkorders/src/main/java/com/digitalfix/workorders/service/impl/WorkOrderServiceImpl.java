@@ -124,6 +124,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    public WorkOrder updateWorkOrder(Long id, WorkOrderRequestDTO request) {
+        WorkOrder order = getWorkOrderById(id);
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+            order.setDescription(request.getDescription());
+        }
+        if (request.getCustomerId() != null) {
+            order.setCustomerId(request.getCustomerId());
+        }
+        return repository.save(order);
+    }
+
+    @Override
     public void deleteWorkOrder(Long id) {
         WorkOrder order = getWorkOrderById(id);
         repository.delete(order);

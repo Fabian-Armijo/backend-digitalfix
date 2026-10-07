@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-seeds.sql:/docker-entrypoint-initdb.d/init-seeds.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -189,8 +190,8 @@ services:
     container_name: ms-digitalfix-bff
     restart: unless-stopped
     environment:
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-cac38dd3-e614-48df-967a-3c9e4396eae3}
-      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-e0877608-03e1-4d4b-a0c9-d50d0ddbdb7c}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-f01230ab-9e94-4c94-8ce2-d2c2b31558dc}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-ece96448-d15c-403e-9525-fefc4f9378a1}
       CATALOG_URL: http://catalog-service:8082
       WORKORDERS_URL: http://workorders-service:8081
       TECHNICIANS_URL: http://technicians-service:8084
