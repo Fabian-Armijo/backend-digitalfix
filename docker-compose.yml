@@ -54,7 +54,7 @@ services:
       DB_NAME: digitalfix
       DB_USERNAME: postgres
       DB_PASSWORD: postgrespassword
-      RABBITMQ_ADDRESSES: ${RABBITMQ_ADDRESSES:-100.54.203.207:5672}
+      RABBITMQ_ADDRESSES: ${RABBITMQ_ADDRESSES:-44.193.188.103:5672}
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
     ports:
@@ -94,7 +94,7 @@ services:
     container_name: ms-digitalfix-notifications
     restart: unless-stopped
     environment:
-      RABBITMQ_ADDRESSES: ${RABBITMQ_ADDRESSES:-100.54.203.207:5672}
+      RABBITMQ_ADDRESSES: ${RABBITMQ_ADDRESSES:-44.193.188.103:5672}
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
       MAIL_HOST: ${MAIL_HOST:-sandbox.smtp.mailtrap.io}

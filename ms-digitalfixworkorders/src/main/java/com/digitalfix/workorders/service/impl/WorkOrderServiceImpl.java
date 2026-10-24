@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -145,13 +146,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * Emite el evento al TopicExchange de RabbitMQ sin bloquear la transacción principal
      */
     private void publishEvent(WorkOrderEvent event, String routingKey) {
-        try {
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, routingKey, event);
-            log.info("🚀 [RabbitMQ Cluster] Evento emitido a Exchange '{}' | RoutingKey '{}' | Orden #{} -> {}",
-                    RabbitMQConfig.EXCHANGE_NAME, routingKey, event.getOrderId(), event.getStatus());
-        } catch (Exception e) {
-            log.error("⚠️ [RabbitMQ Cluster] Advertencia: No se pudo emitir el evento para la orden #{}: {}",
-                    event.getOrderId(), e.getMessage());
-        }
+        // Publicación asíncrona desacoplada para evitar bloqueos HTTP si el broker tiene latencia
+        CompletableFuture.runAsync(() -> {
+            try {
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, routingKey, event);
+                log.info("🚀 [RabbitMQ Cluster] Evento emitido a Exchange '{}' | RoutingKey '{}' | Orden #{} -> {}",
+                        RabbitMQConfig.EXCHANGE_NAME, routingKey, event.getOrderId(), event.getStatus());
+            } catch (Exception e) {
+                log.error("⚠️ [RabbitMQ Cluster] Advertencia: No se pudo emitir el evento para la orden #{}: {}",
+                        event.getOrderId(), e.getMessage());
+            }
+        });
     }
 }
