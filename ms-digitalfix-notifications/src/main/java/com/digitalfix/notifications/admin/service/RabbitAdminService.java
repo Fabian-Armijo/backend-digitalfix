@@ -108,11 +108,17 @@ public class RabbitAdminService {
         log.warn("🗑️ [RabbitAdminService] Eliminando cola '{}' (ifUnused: {}, ifEmpty: {})",
                 queueName, ifUnused, ifEmpty);
 
-        boolean deleted = rabbitAdmin.deleteQueue(queueName, ifUnused, ifEmpty);
+        boolean deleted;
+        if (!ifUnused && !ifEmpty) {
+            deleted = rabbitAdmin.deleteQueue(queueName);
+        } else {
+            rabbitAdmin.deleteQueue(queueName, ifUnused, ifEmpty);
+            deleted = true;
+        }
 
         if (!deleted) {
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+                    HttpStatus.NOT_FOUND,
                     "No se pudo eliminar la cola '" + queueName + "'. Verifique que exista y que no este en uso."
             );
         }
