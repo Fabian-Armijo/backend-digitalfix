@@ -32,19 +32,35 @@ public class CreateQueueRequestDTO {
     private String name;
 
     @Builder.Default
-    private boolean durable = true;
+    private Boolean durable = true;
 
     @Builder.Default
-    private boolean exclusive = false;
+    private Boolean exclusive = false;
 
     @Builder.Default
-    private boolean autoDelete = false;
+    private Boolean autoDelete = false;
 
     /**
      * Si es true, configura la cola como Quorum Queue (Replicacion Raft en Cluster de alta disponibilidad).
      */
     @Builder.Default
-    private boolean quorum = false;
+    private Boolean quorum = false;
+
+    public boolean isDurable() {
+        return durable == null || durable;
+    }
+
+    public boolean isExclusive() {
+        return exclusive != null && exclusive;
+    }
+
+    public boolean isAutoDelete() {
+        return autoDelete != null && autoDelete;
+    }
+
+    public boolean isQuorum() {
+        return quorum != null && quorum;
+    }
 
     /**
      * Nombre opcional del Dead Letter Exchange para canalizar fallos.

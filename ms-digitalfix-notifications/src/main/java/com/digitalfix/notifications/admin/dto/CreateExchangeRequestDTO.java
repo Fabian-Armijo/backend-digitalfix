@@ -33,8 +33,16 @@ public class CreateExchangeRequestDTO {
     private String type;
 
     @Builder.Default
-    private boolean durable = true;
+    private Boolean durable = true;
 
     @Builder.Default
-    private boolean autoDelete = false;
+    private Boolean autoDelete = false;
+
+    public boolean isDurable() {
+        return durable == null || durable;
+    }
+
+    public boolean isAutoDelete() {
+        return autoDelete != null && autoDelete;
+    }
 }
