@@ -16,8 +16,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class QueueInfoDTO {
     private String name;
-    private Integer messageCount;
-    private Integer consumerCount;
+    private Long messageCount;
+    private Long consumerCount;
     private boolean durable;
     private boolean exclusive;
     private boolean autoDelete;

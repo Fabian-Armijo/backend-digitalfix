@@ -90,13 +90,16 @@ public class RabbitAdminService {
             );
         }
 
-        Integer messageCount = (Integer) props.get(RabbitAdmin.QUEUE_MESSAGE_COUNT);
-        Integer consumerCount = (Integer) props.get(RabbitAdmin.QUEUE_CONSUMER_COUNT);
+        Object msgCountObj = props.get(RabbitAdmin.QUEUE_MESSAGE_COUNT);
+        Object consumerCountObj = props.get(RabbitAdmin.QUEUE_CONSUMER_COUNT);
+
+        long messageCount = (msgCountObj instanceof Number) ? ((Number) msgCountObj).longValue() : 0L;
+        long consumerCount = (consumerCountObj instanceof Number) ? ((Number) consumerCountObj).longValue() : 0L;
 
         return QueueInfoDTO.builder()
                 .name(queueName)
-                .messageCount(messageCount != null ? messageCount : 0)
-                .consumerCount(consumerCount != null ? consumerCount : 0)
+                .messageCount(messageCount)
+                .consumerCount(consumerCount)
                 .status("ACTIVE")
                 .build();
     }
