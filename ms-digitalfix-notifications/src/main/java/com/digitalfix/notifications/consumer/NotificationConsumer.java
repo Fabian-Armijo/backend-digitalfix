@@ -57,6 +57,11 @@ public class NotificationConsumer {
         }
 
         try {
+            // Simulador para pruebas de evaluación: Si el estado es REINTENTO_TEST, simula fallo transitorio de red
+            if ("REINTENTO_TEST".equalsIgnoreCase(event.getStatus()) || "SIMULAR_ERROR_REINTENTO".equalsIgnoreCase(event.getStatus())) {
+                throw new RuntimeException("Error simulado de comunicación I/O con el servidor SMTP externo.");
+            }
+
             // =====================================================================
             // RUTA 2: PROCESAMIENTO EXITOSO (ACK Manual Explicito)
             // =====================================================================

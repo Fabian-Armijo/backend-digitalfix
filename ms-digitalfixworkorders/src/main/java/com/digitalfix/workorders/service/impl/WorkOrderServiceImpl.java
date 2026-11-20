@@ -4,8 +4,10 @@ import com.digitalfix.workorders.config.RabbitMQConfig;
 import com.digitalfix.workorders.model.dto.WorkOrderRequestDTO;
 import com.digitalfix.workorders.model.entity.WorkOrder;
 import com.digitalfix.workorders.model.entity.WorkOrderStatus;
+import com.digitalfix.workorders.model.event.WorkOrderAuditEvent;
 import com.digitalfix.workorders.model.event.WorkOrderEvent;
 import com.digitalfix.workorders.repository.WorkOrderRepository;
+import com.digitalfix.workorders.service.KafkaAuditProducer;
 import com.digitalfix.workorders.service.WorkOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     private final WorkOrderRepository repository;
     private final RabbitTemplate rabbitTemplate;
+    private final KafkaAuditProducer kafkaAuditProducer;
 
     @Override
     public WorkOrder createWorkOrder(WorkOrderRequestDTO request) {
@@ -133,20 +136,53 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         if (request.getCustomerId() != null) {
             order.setCustomerId(request.getCustomerId());
         }
-        return repository.save(order);
+        WorkOrder updated = repository.save(order);
+        kafkaAuditProducer.publishAuditEvent(WorkOrderAuditEvent.builder()
+                .orderId(updated.getId())
+                .customerId(updated.getCustomerId())
+                .technicianId(updated.getTechnicianId())
+                .eventType("ORDER_UPDATED")
+                .previousStatus(updated.getStatus().name())
+                .newStatus(updated.getStatus().name())
+                .description(updated.getDescription())
+                .timestamp(LocalDateTime.now())
+                .build());
+        return updated;
     }
 
     @Override
     public void deleteWorkOrder(Long id) {
         WorkOrder order = getWorkOrderById(id);
         repository.delete(order);
+        kafkaAuditProducer.publishAuditEvent(WorkOrderAuditEvent.builder()
+                .orderId(order.getId())
+                .customerId(order.getCustomerId())
+                .technicianId(order.getTechnicianId())
+                .eventType("ORDER_DELETED")
+                .previousStatus(order.getStatus().name())
+                .newStatus("DELETED")
+                .description(order.getDescription())
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     /**
      * Emite el evento al TopicExchange de RabbitMQ sin bloquear la transacción principal
      */
     private void publishEvent(WorkOrderEvent event, String routingKey) {
-        // Publicación asíncrona desacoplada para evitar bloqueos HTTP si el broker tiene latencia
+        // 1. Publicación asíncrona a Apache Kafka (Bitácora inmutable de auditoría)
+        kafkaAuditProducer.publishAuditEvent(WorkOrderAuditEvent.builder()
+                .orderId(event.getOrderId())
+                .customerId(event.getCustomerId())
+                .technicianId(event.getTechnicianId())
+                .eventType(event.getEventType())
+                .previousStatus(event.getPreviousStatus())
+                .newStatus(event.getStatus())
+                .description(event.getDescription())
+                .timestamp(event.getTimestamp() != null ? event.getTimestamp() : LocalDateTime.now())
+                .build());
+
+        // 2. Publicación asíncrona desacoplada a RabbitMQ para notificaciones transaccionales
         CompletableFuture.runAsync(() -> {
             try {
                 rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, routingKey, event);

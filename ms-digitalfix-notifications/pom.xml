@@ -25,6 +25,12 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
+		<!-- Spring Kafka (Consumidor de Auditoria y Administrador de Topicos) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka</artifactId>
+		</dependency>
+
 		<!-- Spring Mail (SMTP / Mailtrap / Gmail) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
